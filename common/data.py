@@ -85,9 +85,9 @@ def load_dataset(name):
     # 검증 데이터 셋
     elif name == "scene":
         dataset = [[], [], []]
-        for foldername in os.listdir('common/data/DB_dataset_ver3_100000/'):
-            for filename in os.listdir('common/data/DB_dataset_ver3_100000/'+foldername):
-                with open("common/data/DB_dataset_ver3_100000/"+foldername+"/"+filename, "rb") as fr:
+        for foldername in os.listdir('common/data/'):
+            for filename in os.listdir('common/data/'+foldername):
+                with open("common/data/"+foldername+"/"+filename, "rb") as fr:
                     tmp = pickle.load(fr)
                     for i in range(0, len(tmp[0]), 64):
                         dataset[0].append(tmp[0][i])
@@ -296,6 +296,14 @@ class DiskDataSource(DataSource):
                                       self.node_anchored else None)
         neg_b = utils.batch_nx_graphs(neg_b, anchors=neg_b_anchors if
                                       self.node_anchored else None)
+
+
+
+
+
+
+
+                                      
 
         return pos_a, pos_b, neg_a, neg_b, pos_label, neg_label
 

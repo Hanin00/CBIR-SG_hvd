@@ -70,7 +70,6 @@ def train(args, model, dataset, data_source):
         clf_opt.step()
 
     # acc = torch.mean((pred == labels).type(torch.float))
-
     return pred, labels, loss.item()
 
 
@@ -103,7 +102,6 @@ def train_loop(args):
                     print(labels, labels.shape, sep='\n')
                     print("epoch :", e, "batch :", batch_n,
                           "loss :", loss)
-
                 batch_n += 1
 
         if not args.test:

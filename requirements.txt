@@ -1,15 +1,15 @@
-deepsnap == 0.2.1
-networkx == 2.8.6
-numpy == 1.23.2
-scikit_learn == 1.1.2
-scipy == 1.9.1
-seaborn == 0.12.0
-torch == 1.12.1
-torch_geometric == 2.1.0
-test_tube == 0.7.5
-tqdm == 4.64.1
-BeautifulSoup4 == 4.11.1
-lxml == 4.9.1
-matplotlib == 3.5.3
-pytz == 2022.2.1
+deepsnap
+networkx 
+numpy 
+scikit_learn 
+scipy 
+seaborn
+torch 
+torch_geometric
+test_tube 
+tqdm 
+BeautifulSoup4 
+lxml
+matplotlib 
+pytz
 

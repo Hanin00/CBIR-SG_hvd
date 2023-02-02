@@ -4,9 +4,11 @@ from astar_ged.src.distance import ged, normalized_ged
 import multiprocessing as mp
 import pickle
 import random
+import time
+import csv
 
 
-def make_pkl(dataset, queue, train_num_per_row, max_row_per_worker, train):
+def make_pkl(dataset, queue, train_num_per_row, max_row_per_worker, train,vNum):
     '''Make pickle file(create train dataset)
     Format of one train data is graph1, graph2, ged of graph1 and graph2.
     This process is to create a train dataset from subgraphs.
@@ -74,7 +76,7 @@ def make_pkl(dataset, queue, train_num_per_row, max_row_per_worker, train):
                 g2_list.append(dataset[r])
                 ged_list.append(d)
 
-        with open("common/data/DB_dataset_ver3_100000/test/{}_{}.pickle".format(s, e), "wb") as fw:
+        with open("common/data/v3_x100{}/{}_{}.pickle".format(vNum,s, e), "wb") as fw:
             pickle.dump([g1_list, g2_list, ged_list], fw)
         g1_list = []
         g2_list = []
@@ -82,52 +84,74 @@ def make_pkl(dataset, queue, train_num_per_row, max_row_per_worker, train):
 
 
 def main(train):
+
+    times = []
+    start = time.strftime('%Y.%m.%d - %H:%M:%S')
+    times.append("start : "+start)
+
     mp.set_start_method('spawn')
     q = mp.Queue()
     train_num_per_row = 64      # Number of datasets created by one subgraph
     max_row_per_worker = 64     # Number of Subgraphs processed by one processor
-    number_of_worker = 80       # Number of processor
-    with open("data/networkx_ver3_100000/v3_x1000.pickle", "rb") as fr:
-        dataset = pickle.load(fr)
-    total = []
-    # total_class = set()
-    # idx2 = []
-    # for i in range(len(dataset)):
-    for i in range(10000):
-        if train:
-            subs = make_subgraph(dataset[i], 4, False, False)
-        else:
-            subs = make_subgraph(dataset[i], 3, False, False)
-            subs = subs[:2]
-        # idx2.append(len(subs))
-        # total_class |= {v for idx, v in dataset[i].nodes(data='name')}
-        total.extend(subs)
+    number_of_worker = 25       # Number of processor
 
-    # print("class 수 :",len(total_class))
+    # vNumList = [3,2,0,8,1,4,9,7,6] # gpu 7에서 2,0번 시작함 gpu8번에서 3, gpu 6번에서 8
+    vNumList = [6]
+    for vNum in vNumList : 
+        with open("data/DatasetVer3/v3_x100{}.pickle".format(vNum), "rb") as fr:
+            dataset = pickle.load(fr)
 
-    # print("각 이미지에 대한 subgraph 수 :", idx2)
-    # print("max", max(idx2), "min", min(idx2))
-    # print("10개 이상 :", len([i for i in idx2 if 10 < i]))
-    # print("20개 이상 :", len([i for i in idx2 if 20 < i]))
-    # print("30개 이상 :", len([i for i in idx2 if 30 < i]))
-    # print("50개 이상 :", len([i for i in idx2 if 50 < i]))
-    # print("100개 이상 :", len([i for i in idx2 if 100 < i]))
-    # print("총 subgraph 수 :", len(total))
-    # exit()
+        total = []
+        # total_class = set()
+        # idx2 = []
+        # for i in range(len(dataset)):
+        for i in range(10000):
+            if train:
+                subs = make_subgraph(dataset[i], 4, False, False)
+            else:
+                subs = make_subgraph(dataset[i], 3, False, False)
+                subs = subs[:2]
+            # idx2.append(len(subs))
+            # total_class |= {v for idx, v in dataset[i].nodes(data='name')}
+            total.extend(subs)
+        with open("common/data/v3_x100{}/subs.pkl".format(vNum), 'wb') as f:
+            pickle.dump(total, f, pickle.HIGHEST_PROTOCOL)   
+        with open('common/data/v3_x100{}/subs.pkl'.format(vNum), 'rb') as f:
+            data = pickle.load(f)
+            print(len(data))
+    
+        # # print("class 수 :",len(total_class))
 
-    for i in range(0, len(total), max_row_per_worker):
-        q.put(i)
+        # # print("각 이미지에 대한 subgraph 수 :", idx2)
+        # # print("max", max(idx2), "min", min(idx2))
+        # # print("10개 이상 :", len([i for i in idx2 if 10 < i]))
+        # # print("20개 이상 :", len([i for i in idx2 if 20 < i]))
+        # # print("30개 이상 :", len([i for i in idx2 if 30 < i]))
+        # # print("50개 이상 :", len([i for i in idx2 if 50 < i]))
+        # # print("100개 이상 :", len([i for i in idx2 if 100 < i]))
+        # # print("총 subgraph 수 :", len(total))
+        # # exit()
 
-    workers = []
-    for i in range(number_of_worker):
-        worker = mp.Process(target=make_pkl, args=(
-            total, q, train_num_per_row, max_row_per_worker, train))
-        workers.append(worker)
-        worker.start()
+        for i in range(0, len(total), max_row_per_worker):
+            q.put(i)
 
-    for worker in workers:
-        worker.join()
+        workers = []
+        for i in range(number_of_worker):
+            worker = mp.Process(target=make_pkl, args=(
+                total, q, train_num_per_row, max_row_per_worker, train,vNum))
+            workers.append(worker)
+            worker.start()
 
+        for worker in workers:
+            worker.join()
+        
+        end = time.strftime('%Y.%m.%d - %H:%M:%S')
+        times.append("end : "+end)
+
+        with open("common/data/v3_x100{}/.csv".format(vNum), 'w') as file:
+            writer = csv.writer(file)
+            writer.writerow(tiems)
+        
 
 if __name__ == "__main__":
     main(True)
