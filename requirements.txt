@@ -1,0 +1,15 @@
+deepsnap
+networkx 
+numpy 
+scikit_learn 
+scipy 
+seaborn
+torch 
+torch_geometric
+test_tube 
+tqdm 
+BeautifulSoup4 
+lxml
+matplotlib 
+pytz
+
